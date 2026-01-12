@@ -1,0 +1,23 @@
+# General
+.DS_Store
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Frontend
+node_modules/
+.next/
+dist/
+build/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

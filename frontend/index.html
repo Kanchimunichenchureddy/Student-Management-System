@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System - Login</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css?v=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container" id="authWrapper">
+        <!-- Auth Header (Visible only on login) -->
+        <header id="authHeader">
+            <h1>Student Management System</h1>
+            <p>Sign in to access your account</p>
+        </header>
+
+        <main class="auth-container" id="authContainer">
+            <!-- Login Form -->
+            <div id="loginForm" class="form-container auth-form">
+                <h2>Sign In</h2>
+                <form id="login">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="Enter your email">
+                        <span class="error" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required placeholder="Enter your password">
+                        <span class="error" id="passwordError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="submit-btn">Sign In</button>
+                    </div>
+                </form>
+
+                <div class="auth-links">
+                    <p>Don't have an account? <a href="#" id="showRegister">Register here</a></p>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="form-container auth-form" style="display: none;">
+                <h2>Create Account</h2>
+                <form id="register">
+                    <div class="form-group">
+                        <label for="regFullName">Full Name *</label>
+                        <input type="text" id="regFullName" name="full_name" required
+                            placeholder="Enter your full name">
+                        <span class="error" id="regFullNameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regUsername">Username *</label>
+                        <input type="text" id="regUsername" name="username" required placeholder="Choose a username">
+                        <span class="error" id="regUsernameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regEmail">Email *</label>
+                        <input type="email" id="regEmail" name="email" required placeholder="Enter your email">
+                        <span class="error" id="regEmailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassword">Password *</label>
+                        <input type="password" id="regPassword" name="password" required
+                            placeholder="Create a password">
+                        <small class="helper-text">At least 8 characters with uppercase, lowercase, number, and special
+                            character</small>
+                        <span class="error" id="regPasswordError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regRole">Role *</label>
+                        <select id="regRole" name="role" required>
+                            <option value="student">Student</option>
+                            <option value="faculty">Faculty</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <span class="error" id="regRoleError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="submit-btn">Create Account</button>
+                    </div>
+                </form>
+
+                <div class="auth-links">
+                    <p>Already have an account? <a href="#" id="showLogin">Sign in here</a></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Dashboard (New Layout) -->
+    <div id="dashboard" class="dashboard-wrapper" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">M</div>
+                <h3>MySchool</h3>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button id="navHome" class="nav-item active">
+                    <i class="fa-solid fa-house"></i> <span>Home</span>
+                </button>
+                <button id="navStudents" class="nav-item">
+                    <i class="fa-solid fa-user-graduate"></i> <span>Manage students</span>
+                </button>
+                <button id="navEmployees" class="nav-item">
+                    <i class="fa-solid fa-chalkboard-user"></i> <span>Manage Employees</span>
+                </button>
+                <button id="navAttendance" class="nav-item">
+                    <i class="fa-solid fa-clipboard-check"></i> <span>Attendance</span>
+                </button>
+                <button id="navFees" class="nav-item">
+                    <i class="fa-solid fa-receipt"></i> <span>Manage Fees</span>
+                </button>
+                <button id="navAssignments" class="nav-item">
+                    <i class="fa-solid fa-book-open"></i> <span>Assignments</span>
+                </button>
+                <button id="navReports" class="nav-item">
+                    <i class="fa-solid fa-chart-line"></i> <span>Progress Reports</span>
+                </button>
+                <button id="navMore" class="nav-item">
+                    <i class="fa-solid fa-border-all"></i> <span>More</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="navSettings" class="nav-item">
+                    <i class="fa-solid fa-gear"></i> <span>Settings</span>
+                </button>
+                <button id="navHelp" class="nav-item">
+                    <i class="fa-solid fa-headset"></i> <span>Help and support</span>
+                </button>
+
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2>Hello, <span id="userNameDisplay">User</span></h2>
+                </div>
+
+                <div class="header-center">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search">
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="lang-selector">
+                        <i class="fa-solid fa-globe"></i> Eng <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <button class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+                    <button class="icon-btn"><i class="fa-solid fa-bell"></i></button>
+                    <button class="icon-btn"><i class="fa-solid fa-circle-question"></i></button>
+
+                    <div class="user-profile" id="userProfileDropdownTrigger">
+                        <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile"
+                            id="headerProfileImg">
+                        <span id="headerUserName">User</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+
+                        <!-- Dropdown Menu -->
+                        <div class="dropdown-menu" id="userDropdown">
+                            <a href="#" id="dropdownProfile">Profile</a>
+                            <a href="#" id="dropdownLogout" class="text-danger">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="content-scroll">
+
+                <!-- HOME VIEW -->
+                <div id="viewHome" class="content-view">
+
+                    <!-- Premium Banner 
+                    <div class="premium-banner">
+                        <div class="banner-content">
+                            <div class="crown-icon"><i class="fa-solid fa-crown"></i></div>
+                            <div>
+                                <h3>Upgrade to Premium Membership</h3>
+                                <p>Access Premium Features</p>
+                            </div>
+                        </div>
+                        <button class="upgrade-btn">Upgrade Now <i class="fa-solid fa-rocket"></i></button>
+                    </div> -->
+
+                    <!-- Stats Row -->
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span>Students Attendance</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-sub text-success">Students Present Today</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span>Employees Attendance</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                            <div class="stat-value">350</div>
+                            <div class="stat-sub text-success">Employees Present Today</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span>Fee Collected</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                            <div class="stat-value">₹25,0000</div>
+                            <div class="stat-sub text-success">Fees Collected - This Month</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span>Staff Alerts</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                            <div class="stat-value">5</div>
+                            <div class="stat-sub text-danger">On leave today</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- Left Column -->
+                        <div class="grid-left">
+                            <!-- Quick Actions -->
+                            <div class="section-card">
+                                <div class="card-header">
+                                    <h3>Quick Actions</h3>
+                                    <a href="#" class="view-all">View All ></a>
+                                </div>
+                                <div class="actions-grid">
+                                    <button class="action-btn add-new" id="quickAddStudent">
+                                        <div class="icon-circle dashed"><i class="fa-solid fa-plus"></i></div>
+                                        <span>Add</span>
+                                    </button>
+                                    <button class="action-btn">
+                                        <div class="icon-circle"><i class="fa-solid fa-paper-plane"></i></div>
+                                        <span>Send Notice</span>
+                                    </button>
+                                    <button class="action-btn">
+                                        <div class="icon-circle"><i class="fa-solid fa-book"></i></div>
+                                        <span>Assignment</span>
+                                    </button>
+                                    <button class="action-btn">
+                                        <div class="icon-circle"><i class="fa-solid fa-cash-register"></i></div>
+                                        <span>Fees</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- AI Insights -->
+                            <div class="section-card ai-insights">
+                                <div class="card-header">
+                                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Insights</h3>
+                                    <a href="#" class="view-all">View All ></a>
+                                </div>
+                                <div class="insight-list">
+                                    <div class="insight-item">
+                                        <div class="insight-line"></div>
+                                        <div>
+                                            <p>Great news! Your school has 32% fewer latecomers this month compared to
+                                                last month.</p>
+                                            <a href="#">View detailed report ></a>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item">
+                                        <div class="insight-line warning"></div>
+                                        <div>
+                                            <p>Class 10B has the highest absenteeism rate (23%) this week. Consider
+                                                parent meeting.</p>
+                                            <a href="#">Send reminders ></a>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item">
+                                        <div class="insight-line info"></div>
+                                        <div>
+                                            <p>Fee collection trend suggests you may fall short by 15% this month. Early
+                                                reminders recommended.</p>
+                                            <a href="#">Send fee reminders ></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-card">
+                                <div class="card-header">
+                                    <h3>Attendance Overview</h3>
+                                    <div class="header-actions">
+                                        <select class="small-select">
+                                            <option>Students</option>
+                                        </select>
+                                        <a href="#" class="view-all">View All ></a>
+                                    </div>
+                                </div>
+                                <!-- Chart Placeholder -->
+                                <div
+                                    style="height: 150px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #adb5bd;">
+                                    Chart Visualization Placeholder
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="grid-right">
+                            <!-- Calendar -->
+                            <div class="section-card">
+                                <div class="card-header">
+                                    <h3>7 July 2025</h3>
+                                    <div class="calendar-nav">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </div>
+                                </div>
+                                <div class="calendar-widget">
+                                    <div class="cal-days">
+                                        <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+                                    </div>
+                                    <div class="cal-grid">
+                                        <span class="text-muted">26</span><span class="text-muted">27</span><span
+                                            class="text-muted">28</span><span class="text-muted">29</span><span
+                                            class="text-muted">30</span><span>1</span><span>2</span>
+                                        <span>3</span><span>4</span><span>5</span><span>6</span><span
+                                            class="active-day">7</span><span>8</span><span>9</span>
+                                        <span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+                                        <span>17</span><span>18</span><span
+                                            class="event-dot">19</span><span>20</span><span>21</span><span>22</span><span>23</span>
+                                        <span>24</span><span
+                                            class="event-dot">25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+                                        <span>31</span><span class="text-muted">1</span><span
+                                            class="text-muted">2</span><span class="text-muted">3</span><span
+                                            class="text-muted">4</span><span class="text-muted">5</span><span
+                                            class="text-muted">6</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Today's Events -->
+                            <div class="section-card transparent-bg">
+                                <div class="card-header">
+                                    <h3>Today</h3>
+                                </div>
+
+                                <div class="event-card">
+                                    <div class="event-time">11:45 PM</div>
+                                    <div class="event-details">
+                                        <div class="event-icon"><i class="fa-solid fa-flask"></i></div>
+                                        <div>
+                                            <h4>Annual Science Fair</h4>
+                                            <p>Join us for a day of innovation, creativity and experimentation.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="event-card">
+                                    <div class="event-time">3:00 PM</div>
+                                    <div class="event-details">
+                                        <div class="event-icon"><i class="fa-solid fa-palette"></i></div>
+                                        <div>
+                                            <h4>Art & Craft Exhibition</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STUDENT MANAGEMENT VIEW (Adapted) -->
+                <div id="viewStudents" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>Student Management</h3>
+                        <div class="action-buttons">
+                            <button id="addStudentModalBtn" class="submit-btn" style="width: auto;">Add Student</button>
+                        </div>
+                    </div>
+
+                    <!-- Insert existing student form here -->
+                    <div id="addStudentForm" class="form-container" style="display: none;">
+                        <h4>Add New Student</h4>
+                        <form id="studentForm">
+                            <div class="form-group"><label for="studentFullName">Full Name *</label><input type="text"
+                                    id="studentFullName" name="full_name" required><span class="error"
+                                    id="studentFullNameError"></span></div>
+                            <div class="form-group"><label for="studentRollNumber">Roll Number *</label><input
+                                    type="text" id="studentRollNumber" name="roll_number" required><span class="error"
+                                    id="studentRollNumberError"></span></div>
+                            <div class="form-group"><label for="studentEmail">Email *</label><input type="email"
+                                    id="studentEmail" name="email" required><span class="error"
+                                    id="studentEmailError"></span></div>
+                            <div class="form-group"><label for="studentPhone">Phone Number *</label><input type="tel"
+                                    id="studentPhone" name="phone_number" required><span class="error"
+                                    id="studentPhoneError"></span></div>
+                            <div class="form-group"><label for="studentDepartment">Department *</label>
+                                <select id="studentDepartment" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                    <option value="Civil">Civil</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="Chemical">Chemical</option>
+                                    <option value="Biotechnology">Biotechnology</option>
+                                </select><span class="error" id="studentDepartmentError"></span>
+                            </div>
+                            <div class="form-group"><label for="studentYear">Year of Study *</label>
+                                <select id="studentYear" name="year_of_study" required>
+                                    <option value="">Select Year</option>
+                                    <option value="1st Year">1st Year</option>
+                                    <option value="2nd Year">2nd Year</option>
+                                    <option value="3rd Year">3rd Year</option>
+                                    <option value="4th Year">4th Year</option>
+                                    <option value="5th Year">5th Year</option>
+                                </select><span class="error" id="studentYearError"></span>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="submit-btn">Submit</button>
+                                <button type="button" id="cancelStudentBtn"
+                                    class="submit-btn cancel-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-wrapper">
+                            <table id="studentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Full Name</th>
+                                        <th>Roll Number</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Department</th>
+                                        <th>Year</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="loading" class="loading">Loading students...</div>
+                        <div id="noData" class="no-data" style="display: none;">No students found.</div>
+                    </div>
+                </div>
+
+                <!-- COURSE MANAGEMENT VIEW -->
+                <div id="viewCourses" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>Course Management</h3>
+                        <div class="action-buttons">
+                            <button id="addCourseModalBtn" class="submit-btn" style="width: auto;">Add Course</button>
+                        </div>
+                    </div>
+                    <div id="addCourseForm" class="form-container" style="display: none;">
+                        <h4>Add New Course</h4>
+                        <form id="courseForm">
+                            <div class="form-group"><label for="courseCode">Course Code *</label><input type="text"
+                                    id="courseCode" name="course_code" required placeholder="e.g., CS101"><span
+                                    class="error" id="courseCodeError"></span></div>
+                            <div class="form-group"><label for="courseName">Course Name *</label><input type="text"
+                                    id="courseName" name="course_name" required><span class="error"
+                                    id="courseNameError"></span></div>
+                            <div class="form-group"><label for="courseDescription">Description</label><textarea
+                                    id="courseDescription" name="description" rows="3"></textarea></div>
+                            <div class="form-group"><label for="courseCredits">Credits *</label><input type="number"
+                                    id="courseCredits" name="credits" required min="1" max="6" value="3"><span
+                                    class="error" id="courseCreditsError"></span></div>
+                            <div class="form-group"><label for="courseDepartment">Department *</label><select
+                                    id="courseDepartment" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                    <option value="Civil">Civil</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="Chemical">Chemical</option>
+                                    <option value="Biotechnology">Biotechnology</option>
+                                </select><span class="error" id="courseDepartmentError"></span></div>
+                            <div class="form-group"><button type="submit" class="submit-btn">Submit</button><button
+                                    type="button" id="cancelCourseBtn" class="submit-btn cancel-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="table-container">
+                        <div class="table-wrapper">
+                            <table id="coursesTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Credits</th>
+                                        <th>Department</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coursesTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="courseLoading" class="loading">Loading courses...</div>
+                        <div id="courseNoData" class="no-data" style="display: none;">No courses found.</div>
+                    </div>
+                </div>
+
+                <!-- PROFILE VIEW -->
+                <div id="viewProfile" class="content-view" style="display: none;">
+                    <div class="form-container">
+                        <h3>Your Profile</h3>
+                        <div class="profile-info">
+                            <p><strong>Name:</strong> <span id="profileName"></span></p>
+                            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                            <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+                            <p><strong>Role:</strong> <span id="profileRole"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMPLOYEE MANAGEMENT VIEW -->
+                <div id="viewEmployees" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>Employee Management</h3>
+                        <div class="action-buttons">
+                            <button id="addEmployeeModalBtn" class="submit-btn" style="width: auto;">Add
+                                Employee</button>
+                        </div>
+                    </div>
+
+                    <div id="addEmployeeForm" class="form-container" style="display: none;">
+                        <h4>Add New Employee</h4>
+                        <form id="employeeForm">
+                            <div class="form-group"><label>Full Name *</label><input type="text" name="full_name"
+                                    required></div>
+                            <div class="form-group"><label>Username *</label><input type="text" name="username"
+                                    required></div>
+                            <div class="form-group"><label>Email *</label><input type="email" name="email" required>
+                            </div>
+                            <div class="form-group"><label>Password *</label><input type="password" name="password"
+                                    required></div>
+                            <div class="form-group"><label>Role *</label>
+                                <select name="role" required>
+                                    <option value="faculty">Faculty</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="submit-btn">Create Employee</button>
+                                <button type="button" id="cancelEmployeeBtn"
+                                    class="submit-btn cancel-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-wrapper">
+                            <table id="employeesTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeesTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="employeeLoading" class="loading">Loading employees...</div>
+                        <div id="employeeNoData" class="no-data" style="display: none;">No employees found.</div>
+                    </div>
+                </div>
+
+                <!-- FEES VIEW -->
+                <div id="viewFees" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>Fees Management</h3>
+                        <button class="submit-btn" style="width: auto;">Record Payment</button>
+                    </div>
+                    <div class="table-container">
+                        <div class="no-data" style="display: block;">
+                            <i class="fa-solid fa-receipt fa-3x"
+                                style="margin-bottom: 1rem; color: var(--text-muted);"></i>
+                            <p>No fee records found for this session.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTS VIEW -->
+                <div id="viewReports" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>Progress Reports</h3>
+                        <button class="submit-btn" style="width: auto;">Generate Report</button>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card" style="grid-column: span 2;">
+                            <div class="stat-header">
+                                <span>Academic Performance</span>
+                            </div>
+                            <div
+                                style="height: 200px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px; margin-top: 1rem; color: var(--text-muted);">
+                                Performance Chart Placeholder
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATTENDANCE VIEW -->
+                <div id="viewAttendance" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>Attendance Management</h3>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="date" id="attendanceDate" class="modern-input" style="padding: 8px;">
+                            <button class="submit-btn" onclick="loadAttendance()" style="width: auto;">Load</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-wrapper">
+                            <table id="attendanceTable">
+                                <thead>
+                                    <tr>
+                                        <th>Roll No</th>
+                                        <th>Student Name</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="attendanceLoading" class="loading" style="display: none;">Loading attendance...</div>
+                    </div>
+                </div>
+
+                <!-- GENERIC / COMING SOON VIEW (Employees, Attendance, More) -->
+                <div id="viewComingSoon" class="content-view" style="display: none;">
+                    <div class="form-container" style="text-align: center; padding: 4rem 2rem;">
+                        <i class="fa-solid fa-person-digging fa-3x"
+                            style="color: var(--primary-color); margin-bottom: 1rem;"></i>
+                        <h3 id="comingSoonTitle">Coming Soon</h3>
+                        <p>This module is currently under development. Check back later!</p>
+                    </div>
+                </div>
+
+                <!-- SETTINGS VIEW -->
+                <div id="viewSettings" class="content-view" style="display: none;">
+                    <div class="form-container">
+                        <h3>System Settings</h3>
+                        <form onsubmit="event.preventDefault(); showMessage('Settings saved!', 'success');">
+                            <div class="form-group">
+                                <label>School Name</label>
+                                <input type="text" value="MySchool Academy">
+                            </div>
+                            <div class="form-group">
+                                <label>Academic Year</label>
+                                <select>
+                                    <option>2025-2026</option>
+                                    <option>2024-2025</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Theme</label>
+                                <select>
+                                    <option>Light</option>
+                                    <option>Dark</option>
+                                    <option>System Default</option>
+                                </select>
+                            </div>
+                            <button class="submit-btn">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- HELP VIEW -->
+                <div id="viewHelp" class="content-view" style="display: none;">
+                    <div class="form-container">
+                        <h3>Help & Support</h3>
+                        <div class="accordion">
+                            <details
+                                style="margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">
+                                <summary style="font-weight: 500; cursor: pointer;">How do I add a new student?
+                                </summary>
+                                <p style="margin-top: 0.5rem; color: var(--text-muted);">Go to the "Manage Students"
+                                    section and click the "Add Student" button.</p>
+                            </details>
+                            <details
+                                style="margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">
+                                <summary style="font-weight: 500; cursor: pointer;">How can I export reports?</summary>
+                                <p style="margin-top: 0.5rem; color: var(--text-muted);">Navigate to "Progress Reports"
+                                    and select the desired report type to export as PDF or CSV.</p>
+                            </details>
+                            <details style="border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">
+                                <summary style="font-weight: 500; cursor: pointer;">Who to contact for technical
+                                    support?</summary>
+                                <p style="margin-top: 0.5rem; color: var(--text-muted);">Please email
+                                    support@myschoolapp.com for any technical assistance.</p>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="message-container" style="display: none;">
+        <div id="messageContent" class="message-content"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
