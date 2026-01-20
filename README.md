@@ -113,15 +113,22 @@ This will create:
 
 ### 3. Frontend Setup
 
-1. Open `frontend/index.html` in a web browser, or
-   
-2. Serve the frontend files using a local web server:
+1. Navigate to the frontend directory:
    ```bash
    cd frontend
-   python -m http.server 3000
    ```
 
-3. Open `http://localhost:3000` in your browser
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open `http://localhost:3000` in your browser
 
 ## API Endpoints
 
@@ -221,7 +228,7 @@ This will create:
 2. Serve the frontend:
    ```bash
    cd frontend
-   python -m http.server 3000
+   npm run dev
    ```
 
 3. Open `http://localhost:3000` in your browser

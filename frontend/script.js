@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://127.0.0.1:8005';
+const API_BASE_URL = ''; // Proxied via Vite in development
 
 // Token storage
 let accessToken = localStorage.getItem('access_token');
