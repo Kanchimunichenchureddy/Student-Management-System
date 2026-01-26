@@ -21,6 +21,23 @@ A full-stack web application for managing student details with secure authentica
 - **User Management**: Admin can manage user accounts
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 
+---
+
+## 🖼️ Visual Overview
+
+### User Interface
+![Dashboard UI](file:///Users/teja.kanchi/.gemini/antigravity/brain/896ed92e-d693-4729-9506-d3edbf90a3d4/dashboard_ui_mockup_1769323986186.png)
+
+### System Diagrams
+| Use Case Diagram | Activity Diagram |
+| :--- | :--- |
+| ![Use Case](file:///Users/teja.kanchi/.gemini/antigravity/brain/896ed92e-d693-4729-9506-d3edbf90a3d4/use_case_diagram_image_1769324521890.png) | ![Activity](file:///Users/teja.kanchi/.gemini/antigravity/brain/896ed92e-d693-4729-9506-d3edbf90a3d4/activity_diagram_image_1769324538987.png) |
+
+### Database Schema (ERD)
+![Database ERD](file:///Users/teja.kanchi/.gemini/antigravity/brain/896ed92e-d693-4729-9506-d3edbf90a3d4/database_erd_diagram_image_1769324558289.png)
+
+---
+
 ## Technology Stack
 
 ### Backend

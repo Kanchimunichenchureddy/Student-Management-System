@@ -33,10 +33,11 @@ const navHome = document.getElementById('navHome');
 const navStudents = document.getElementById('navStudents');
 const navEmployees = document.getElementById('navEmployees');
 const navAttendance = document.getElementById('navAttendance');
-const navAssignments = document.getElementById('navAssignments'); // For Courses/Assignments
-const navMore = document.getElementById('navMore');
+const navAssignments = document.getElementById('navAssignments');
+const navEnrollments = document.getElementById('navEnrollments');
+const navMyCourses = document.getElementById('navMyCourses');
+const navMyAttendance = document.getElementById('navMyAttendance');
 
-// Views
 // Views
 const viewHome = document.getElementById('viewHome');
 const viewStudents = document.getElementById('viewStudents');
@@ -50,6 +51,9 @@ const viewSettings = document.getElementById('viewSettings');
 const viewHelp = document.getElementById('viewHelp');
 const viewComingSoon = document.getElementById('viewComingSoon');
 const comingSoonTitle = document.getElementById('comingSoonTitle');
+const viewEnrollments = document.getElementById('viewEnrollments');
+const viewMyCourses = document.getElementById('viewMyCourses');
+const viewMyAttendance = document.getElementById('viewMyAttendance');
 
 // Student Management
 const studentForm = document.getElementById('studentForm');
@@ -139,6 +143,16 @@ function clearAuthData() {
     localStorage.removeItem('user');
 }
 
+async function handleAuthError(response) {
+    if (response.status === 401) {
+        clearAuthData();
+        showLogin();
+        showMessage('Session expired. Please log in again.', 'error');
+        return true;
+    }
+    return false;
+}
+
 function showMessage(message, type = 'info') {
     const messageString = typeof message === 'string' ? message : JSON.stringify(message);
 
@@ -190,21 +204,61 @@ function escapeHtml(text) {
 // ============== Navigation Functions ==============
 
 function hideAllViews() {
-    viewHome.style.display = 'none';
-    viewStudents.style.display = 'none';
-    viewStudents.style.display = 'none';
-    if (viewEmployees) viewEmployees.style.display = 'none';
-    if (viewAttendance) viewAttendance.style.display = 'none';
-    viewCourses.style.display = 'none';
-    viewProfile.style.display = 'none';
-    if (viewFees) viewFees.style.display = 'none';
-    if (viewReports) viewReports.style.display = 'none';
-    if (viewSettings) viewSettings.style.display = 'none';
-    if (viewHelp) viewHelp.style.display = 'none';
-    if (viewComingSoon) viewComingSoon.style.display = 'none';
-
+    // Hide all content views
+    const allViews = [viewHome, viewStudents, viewEmployees, viewAttendance, viewCourses, 
+                      viewProfile, viewFees, viewReports, viewSettings, viewHelp, 
+                      viewComingSoon, viewEnrollments, viewMyCourses, viewMyAttendance];
+    allViews.forEach(v => { if (v) v.style.display = 'none'; });
+    
     // Reset active nav state
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+}
+
+function setupRoleBasedUI() {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user) return;
+    
+    const role = user.role;
+    const isStudent = role === 'student';
+    const isAdmin = role === 'admin';
+    const isFaculty = role === 'faculty';
+    const isAdminOrFaculty = isAdmin || isFaculty;
+    
+    // Student-only navigation
+    document.querySelectorAll('.student-only').forEach(el => {
+        el.style.display = isStudent ? 'flex' : 'none';
+    });
+    
+    // Admin-only navigation
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = isAdmin ? 'flex' : 'none';
+    });
+    
+    // Admin/Faculty navigation
+    document.querySelectorAll('.admin-faculty').forEach(el => {
+        el.style.display = isAdminOrFaculty ? 'flex' : 'none';
+    });
+    
+    // Hide ADD buttons for students
+    if (isStudent) {
+        if (addStudentModalBtn) addStudentModalBtn.style.display = 'none';
+        if (addCourseModalBtn) addCourseModalBtn.style.display = 'none';
+        if (quickAddStudent) quickAddStudent.style.display = 'none';
+        if (addEmployeeModalBtn) addEmployeeModalBtn.style.display = 'none';
+    } else {
+        if (addStudentModalBtn) addStudentModalBtn.style.display = 'inline-block';
+        if (addCourseModalBtn) addCourseModalBtn.style.display = 'inline-block';
+        if (quickAddStudent) quickAddStudent.style.display = 'flex';
+        if (addEmployeeModalBtn) addEmployeeModalBtn.style.display = 'inline-block';
+    }
+    
+    // Update dashboard greeting based on role
+    const roleGreeting = {
+        'admin': 'Administrator',
+        'faculty': 'Faculty',
+        'student': 'Student'
+    };
+    document.title = `Dashboard - ${roleGreeting[role] || 'User'}`;
 }
 
 function activateView(viewElement, navElement) {
@@ -265,7 +319,22 @@ function switchToComingSoon(title, navElement) {
 function switchToProfile() {
     hideAllViews();
     viewProfile.style.display = 'block';
-    // No specific nav item for profile in sidebar usually, but header dropdown link goes here
+    loadProfileData();
+}
+
+function switchToEnrollments() {
+    activateView(viewEnrollments, navEnrollments);
+    loadEnrollments();
+}
+
+function switchToMyCourses() {
+    activateView(viewMyCourses, navMyCourses);
+    loadMyCourses();
+}
+
+function switchToMyAttendance() {
+    activateView(viewMyAttendance, navMyAttendance);
+    loadMyAttendance();
 }
 
 // ============== Auth Functions ==============
@@ -290,32 +359,51 @@ function showRegister() {
 }
 
 function showDashboard() {
-    authWrapper.style.display = 'none'; // Hide entire auth container
+    authWrapper.style.display = 'none';
     authContainer.style.display = 'none';
     authHeader.style.display = 'none';
-    dashboard.style.display = 'flex'; // Important for Sidebar layout
-    document.title = "Dashboard - MySchool";
+    dashboard.style.display = 'flex';
 
     const user = JSON.parse(localStorage.getItem('user') || 'null');
     if (user) {
         userNameDisplay.textContent = user.full_name;
         headerUserName.textContent = user.username;
         headerProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}&background=random`;
-
-        // Profile View Data
-        profileName.textContent = user.full_name;
-        profileEmail.textContent = user.email;
-        profileUsername.textContent = user.username;
-        profileUsername.textContent = user.username;
-        profileRole.textContent = user.role;
     }
 
+    // Setup role-based navigation
+    setupRoleBasedUI();
+    
     // Load Dashboard Data
     loadDashboardStats();
     renderCalendar();
 
     // Default view
     switchToHome();
+}
+
+function loadProfileData() {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user) return;
+    
+    // Profile card
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileRoleBadge = document.getElementById('profileRoleBadge');
+    
+    if (profileName) profileName.textContent = user.full_name;
+    if (profileEmail) profileEmail.textContent = user.email;
+    if (profileUsername) profileUsername.textContent = user.username;
+    if (profileAvatar) profileAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}&background=4318FF&color=fff&size=120`;
+    if (profileRoleBadge) {
+        profileRoleBadge.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        profileRoleBadge.className = `badge ${user.role === 'admin' ? 'badge-primary' : user.role === 'faculty' ? 'badge-secondary' : 'badge-success'}`;
+    }
+    
+    // Edit form
+    const editProfileName = document.getElementById('editProfileName');
+    const editProfileEmail = document.getElementById('editProfileEmail');
+    if (editProfileName) editProfileName.value = user.full_name;
+    if (editProfileEmail) editProfileEmail.value = user.email;
 }
 
 function logout() {
@@ -495,14 +583,16 @@ async function loadStudents() {
     studentsTableBody.innerHTML = '';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/students`);
+        const response = await fetch(`${API_BASE_URL}/students`, { headers: getAuthHeaders() });
         const students = await response.json();
 
         if (response.ok) {
             if (students.length === 0) noData.style.display = 'block';
             else displayStudents(students);
         } else {
-            showMessage('Error loading students', 'error');
+            if (!(await handleAuthError(response))) {
+                showMessage('Error loading students', 'error');
+            }
         }
     } catch (error) {
         console.error('Error:', error);
@@ -764,8 +854,6 @@ async function deleteUser(id) {
 }
 window.deleteUser = deleteUser;
 
-window.deleteUser = deleteUser;
-
 // --- Attendance Logic ---
 async function loadAttendance() {
     if (!attendanceTableBody) return;
@@ -859,6 +947,249 @@ async function markStudent(studentId, status) {
 window.markStudent = markStudent;
 
 
+// --- Enrollments ---
+async function loadEnrollments() {
+    const enrollmentsLoading = document.getElementById('enrollmentsLoading');
+    const enrollmentsNoData = document.getElementById('enrollmentsNoData');
+    const enrollmentsTableBody = document.getElementById('enrollmentsTableBody');
+    
+    if (!enrollmentsTableBody) return;
+    
+    enrollmentsLoading.style.display = 'block';
+    enrollmentsNoData.style.display = 'none';
+    enrollmentsTableBody.innerHTML = '';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/enrollments`, { headers: getAuthHeaders() });
+        const enrollments = await response.json();
+        
+        if (response.ok) {
+            if (enrollments.length === 0) {
+                enrollmentsNoData.style.display = 'block';
+            } else {
+                displayEnrollments(enrollments);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading enrollments:', error);
+        showMessage('Failed to load enrollments', 'error');
+    } finally {
+        enrollmentsLoading.style.display = 'none';
+    }
+}
+
+function displayEnrollments(enrollments) {
+    const enrollmentsTableBody = document.getElementById('enrollmentsTableBody');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    enrollmentsTableBody.innerHTML = '';
+    enrollments.forEach(enrollment => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${escapeHtml(enrollment.student_name || 'Unknown')}</td>
+            <td>${escapeHtml(enrollment.course_name || 'Unknown')}</td>
+            <td>${new Date(enrollment.enrolled_at).toLocaleDateString()}</td>
+            <td>
+                <span class="badge ${enrollment.grade ? 'badge-success' : 'badge-secondary'}">
+                    ${enrollment.grade || 'Not Graded'}
+                </span>
+            </td>
+            <td>
+                ${user && user.role === 'admin' ? 
+                `<button class="action-btn delete-btn" onclick="deleteEnrollment(${enrollment.id})">
+                    <i class="fa-solid fa-trash"></i>
+                </button>` : ''}
+            </td>
+        `;
+        enrollmentsTableBody.appendChild(row);
+    });
+}
+
+async function loadEnrollmentSelects() {
+    // Load students and courses for enrollment form
+    try {
+        const [studentsRes, coursesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/students`, { headers: getAuthHeaders() }),
+            fetch(`${API_BASE_URL}/courses`, { headers: getAuthHeaders() })
+        ]);
+        
+        if (studentsRes.ok) {
+            const students = await studentsRes.json();
+            const studentSelect = document.getElementById('enrollStudentSelect');
+            if (studentSelect) {
+                studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
+                students.forEach(s => {
+                    studentSelect.innerHTML += `<option value="${s.id}">${escapeHtml(s.full_name)} (${escapeHtml(s.roll_number)})</option>`;
+                });
+            }
+        }
+        
+        if (coursesRes.ok) {
+            const courses = await coursesRes.json();
+            const courseSelect = document.getElementById('enrollCourseSelect');
+            if (courseSelect) {
+                courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+                courses.forEach(c => {
+                    courseSelect.innerHTML += `<option value="${c.id}">${escapeHtml(c.course_code)} - ${escapeHtml(c.course_name)}</option>`;
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading enrollment options:', error);
+    }
+}
+
+async function createEnrollment(studentId, courseId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/enrollments`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ student_id: parseInt(studentId), course_id: parseInt(courseId) })
+        });
+        
+        if (response.ok) {
+            showMessage('Student enrolled successfully!', 'success');
+            document.getElementById('addEnrollmentForm').style.display = 'none';
+            document.getElementById('enrollmentForm').reset();
+            loadEnrollments();
+        } else {
+            const err = await response.json();
+            showMessage(err.detail || 'Failed to enroll student', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Network error', 'error');
+    }
+}
+
+async function deleteEnrollment(id) {
+    if (!confirm('Remove this enrollment?')) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/enrollments/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            showMessage('Enrollment removed', 'success');
+            loadEnrollments();
+        } else {
+            showMessage('Failed to remove enrollment', 'error');
+        }
+    } catch (error) {
+        showMessage('Network error', 'error');
+    }
+}
+window.deleteEnrollment = deleteEnrollment;
+
+// --- My Courses (Student Self-Service) ---
+async function loadMyCourses() {
+    const myCoursesGrid = document.getElementById('myCoursesGrid');
+    const myCoursesLoading = document.getElementById('myCoursesLoading');
+    const myCoursesEmpty = document.getElementById('myCoursesEmpty');
+    
+    if (!myCoursesGrid) return;
+    
+    myCoursesLoading.style.display = 'block';
+    myCoursesEmpty.style.display = 'none';
+    myCoursesGrid.innerHTML = '';
+    
+    // For students, we need to get enrollments and then show courses
+    // For now, show all courses (in a real app, filter by student's enrollments)
+    try {
+        const response = await fetch(`${API_BASE_URL}/courses`, { headers: getAuthHeaders() });
+        const courses = await response.json();
+        
+        if (response.ok) {
+            if (courses.length === 0) {
+                myCoursesEmpty.style.display = 'block';
+            } else {
+                courses.forEach(course => {
+                    const card = document.createElement('div');
+                    card.className = 'stat-card';
+                    card.style.cursor = 'pointer';
+                    card.innerHTML = `
+                        <div class="stat-header">
+                            <span>${escapeHtml(course.course_code)}</span>
+                            <span class="badge badge-secondary">${course.credits} Credits</span>
+                        </div>
+                        <h4 style="margin: 0.5rem 0; font-size: 1.1rem;">${escapeHtml(course.course_name)}</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
+                            ${escapeHtml(course.department)}
+                        </p>
+                        ${course.description ? `<p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">${escapeHtml(course.description.substring(0, 100))}...</p>` : ''}
+                    `;
+                    myCoursesGrid.appendChild(card);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading courses:', error);
+        showMessage('Failed to load courses', 'error');
+    } finally {
+        myCoursesLoading.style.display = 'none';
+    }
+}
+
+// --- My Attendance (Student Self-Service) ---
+async function loadMyAttendance() {
+    const myAttendanceTableBody = document.getElementById('myAttendanceTableBody');
+    const myPresentDays = document.getElementById('myPresentDays');
+    const myAbsentDays = document.getElementById('myAbsentDays');
+    const myAttendancePercent = document.getElementById('myAttendancePercent');
+    
+    if (!myAttendanceTableBody) return;
+    
+    myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+    
+    try {
+        // Get current user's attendance (mock: showing all attendance for now)
+        const response = await fetch(`${API_BASE_URL}/attendance`, { headers: getAuthHeaders() });
+        const records = await response.json();
+        
+        if (response.ok) {
+            // Calculate stats
+            let present = 0, absent = 0;
+            records.forEach(r => {
+                if (r.status === 'Present') present++;
+                else if (r.status === 'Absent') absent++;
+            });
+            
+            const total = present + absent;
+            const percent = total > 0 ? Math.round((present / total) * 100) : 0;
+            
+            if (myPresentDays) myPresentDays.textContent = present;
+            if (myAbsentDays) myAbsentDays.textContent = absent;
+            if (myAttendancePercent) {
+                myAttendancePercent.textContent = `${percent}%`;
+                myAttendancePercent.className = `stat-value ${percent >= 75 ? 'text-success' : percent >= 50 ? '' : 'text-danger'}`;
+            }
+            
+            // Display records
+            myAttendanceTableBody.innerHTML = '';
+            if (records.length === 0) {
+                myAttendanceTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No attendance records found</td></tr>';
+            } else {
+                records.slice(0, 30).forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(record.date).toLocaleDateString()}</td>
+                        <td>
+                            <span class="badge ${record.status === 'Present' ? 'badge-success' : 'badge-danger'}">
+                                ${record.status}
+                            </span>
+                        </td>
+                        <td>${escapeHtml(record.remarks || '-')}</td>
+                    `;
+                    myAttendanceTableBody.appendChild(row);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading attendance:', error);
+        myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Failed to load attendance</td></tr>';
+    }
+}
+
 // --- Fees (Mock Logic) ---
 function loadFees() {
     const tableContainer = document.querySelector('#viewFees .table-container');
@@ -919,20 +1250,19 @@ registerForm.addEventListener('submit', async (e) => {
 
 // Sidebar & Header interactions
 navHome.addEventListener('click', switchToHome);
-navStudents.addEventListener('click', switchToStudents);
-navAssignments.addEventListener('click', switchToCourses);
+if (navStudents) navStudents.addEventListener('click', switchToStudents);
+if (navAssignments) navAssignments.addEventListener('click', switchToCourses);
 if (navEmployees) navEmployees.addEventListener('click', switchToEmployees);
-if (navAttendance) navAttendance.addEventListener('click', switchToAttendance); // Direct link
+if (navAttendance) navAttendance.addEventListener('click', switchToAttendance);
 if (navFees) navFees.addEventListener('click', switchToFees);
-if (navReports) navReports.addEventListener('click', switchToReports);
+if (navReports) navReports.addEventListener('click', () => switchToComingSoon('Progress Reports', navReports));
 if (navSettings) navSettings.addEventListener('click', switchToSettings);
 if (navHelp) navHelp.addEventListener('click', switchToHelp);
 
-// Placeholder/Coming Soon links
-// Employees removed from here
-// Placeholder/Coming Soon links
-// Employees and Attendance removed from here
-if (navMore) navMore.addEventListener('click', () => switchToComingSoon('More Modules', navMore));
+// New navigation items
+if (navEnrollments) navEnrollments.addEventListener('click', switchToEnrollments);
+if (navMyCourses) navMyCourses.addEventListener('click', switchToMyCourses);
+if (navMyAttendance) navMyAttendance.addEventListener('click', switchToMyAttendance);
 
 // Profile Dropdown
 if (userProfileDropdownTrigger) {
@@ -1019,8 +1349,60 @@ if (employeeForm) employeeForm.addEventListener('submit', async (e) => {
     await createEmployee(data);
 });
 
+// Enrollment Form
+const addEnrollmentBtn = document.getElementById('addEnrollmentBtn');
+const addEnrollmentForm = document.getElementById('addEnrollmentForm');
+const cancelEnrollmentBtn = document.getElementById('cancelEnrollmentBtn');
+const enrollmentForm = document.getElementById('enrollmentForm');
+
+if (addEnrollmentBtn) addEnrollmentBtn.addEventListener('click', () => {
+    addEnrollmentForm.style.display = 'block';
+    loadEnrollmentSelects();
+});
+
+if (cancelEnrollmentBtn) cancelEnrollmentBtn.addEventListener('click', () => {
+    addEnrollmentForm.style.display = 'none';
+    enrollmentForm.reset();
+});
+
+if (enrollmentForm) enrollmentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    await createEnrollment(fd.get('student_id'), fd.get('course_id'));
+});
+
+// Profile Edit Form
+const profileEditForm = document.getElementById('profileEditForm');
+if (profileEditForm) profileEditForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fullName = document.getElementById('editProfileName').value;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/me?full_name=${encodeURIComponent(fullName)}`, {
+            method: 'PUT',
+            headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const updatedUser = await response.json();
+            saveUser(updatedUser);
+            showMessage('Profile updated successfully!', 'success');
+            
+            // Update UI
+            userNameDisplay.textContent = updatedUser.full_name;
+            headerProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(updatedUser.full_name)}&background=random`;
+            loadProfileData();
+        } else {
+            showMessage('Failed to update profile', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Network error', 'error');
+    }
+});
+
 // Init
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => { 
     if (isLoggedIn()) showDashboard();
     else showLogin();
 });

@@ -11,6 +11,11 @@ venv/
 ENV/
 env/
 .env
+*.env
+
+# Secrets
+.secret_key
+backend/.secret_key
 
 # Frontend
 node_modules/

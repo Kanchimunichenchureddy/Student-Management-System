@@ -1,0 +1,29 @@
+Generic single-database configuration with SQLAlchemy.
+
+## Usage
+
+### Create a new migration
+```bash
+cd backend
+alembic revision --autogenerate -m "Description of changes"
+```
+
+### Apply migrations
+```bash
+alembic upgrade head
+```
+
+### Rollback one migration
+```bash
+alembic downgrade -1
+```
+
+### Show current version
+```bash
+alembic current
+```
+
+### Show migration history
+```bash
+alembic history
+```

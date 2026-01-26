@@ -1,16 +1,13 @@
-from sqlalchemy import Column, Integer, String, Boolean, Enum, create_engine, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, Enum, create_engine, ForeignKey, DateTime, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
-import os
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 import enum
-from typing import Optional
 
-# Database configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:teja12345@localhost:3306/student_db")
+from config import DATABASE_URL, LOG_LEVEL
 
-# Create engine
-engine = create_engine(DATABASE_URL, echo=True)
+# Create engine (disable echo in production)
+engine = create_engine(DATABASE_URL, echo=(LOG_LEVEL == "DEBUG"))
 
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -35,8 +32,13 @@ class Student(Base):
     phone_number = Column(String(15), nullable=False)
     department = Column(String(50), nullable=False)
     year_of_study = Column(String(20), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    # Indexes for frequently queried columns
+    __table_args__ = (
+        Index('ix_students_department', 'department'),
+    )
 
     def to_dict(self):
         return {
@@ -62,8 +64,8 @@ class User(Base):
     full_name = Column(String(100), nullable=False)
     role = Column(String(20), nullable=False, default=UserRole.STUDENT.value)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {
@@ -88,8 +90,8 @@ class Course(Base):
     credits = Column(Integer, nullable=False, default=3)
     department = Column(String(50), nullable=False)
     instructor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     instructor = relationship("User", backref="courses_taught")
 
@@ -113,7 +115,7 @@ class Enrollment(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
     course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
-    enrolled_at = Column(DateTime, default=datetime.utcnow)
+    enrolled_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     grade = Column(String(5), nullable=True)
 
     student = relationship("Student", backref=backref("enrollments", cascade="all, delete-orphan"))
@@ -134,9 +136,15 @@ class Attendance(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     status = Column(Enum("Present", "Absent", "Late", "Excused", name="attendance_status"), default="Present")
     remarks = Column(String(200), nullable=True)
+
+    # Index for date queries
+    __table_args__ = (
+        Index('ix_attendance_date', 'date'),
+        Index('ix_attendance_student_date', 'student_id', 'date'),
+    )
 
     student = relationship("Student", backref=backref("attendance_records", cascade="all, delete-orphan"))
 
@@ -165,8 +173,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# Dependency to get current user (will be used in main.py)
-def get_current_user(db: SessionLocal, token: str):
-    # This will be implemented in main.py with JWT decoding
-    pass

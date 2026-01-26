@@ -996,3 +996,107 @@ tr:last-child td {
     color: var(--text-main);
     flex-grow: 1;
 }
+
+/* Badge Styles */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.badge-primary {
+    background: rgba(67, 24, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.badge-secondary {
+    background: rgba(163, 174, 208, 0.2);
+    color: var(--text-secondary);
+}
+
+.badge-success {
+    background: rgba(5, 205, 153, 0.1);
+    color: var(--success-color);
+}
+
+.badge-danger {
+    background: rgba(238, 93, 80, 0.1);
+    color: var(--danger-color);
+}
+
+.badge-warning {
+    background: rgba(255, 206, 32, 0.15);
+    color: #B38600;
+}
+
+/* Text colors */
+.text-success { color: var(--success-color) !important; }
+.text-danger { color: var(--danger-color) !important; }
+.text-warning { color: #B38600 !important; }
+
+/* Small select */
+.small-select {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: white;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+.small-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Loading and No Data states */
+.loading, .no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Profile info styling */
+.profile-info p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.profile-info strong {
+    color: var(--text-main);
+    margin-right: 0.5rem;
+}
+
+/* Action button improvements */
+.action-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.action-btn:hover {
+    background: var(--bg-color);
+}
+
+.delete-btn {
+    color: var(--danger-color);
+}
+
+.delete-btn:hover {
+    background: rgba(238, 93, 80, 0.1);
+}

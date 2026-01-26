@@ -117,26 +117,36 @@
                 <button id="navHome" class="nav-item active">
                     <i class="fa-solid fa-house"></i> <span>Home</span>
                 </button>
-                <button id="navStudents" class="nav-item">
-                    <i class="fa-solid fa-user-graduate"></i> <span>Manage students</span>
+                
+                <!-- Student Self-Service (visible to students) -->
+                <button id="navMyCourses" class="nav-item student-only">
+                    <i class="fa-solid fa-book-bookmark"></i> <span>My Courses</span>
                 </button>
-                <button id="navEmployees" class="nav-item">
+                <button id="navMyAttendance" class="nav-item student-only">
+                    <i class="fa-solid fa-calendar-check"></i> <span>My Attendance</span>
+                </button>
+                
+                <!-- Admin/Faculty Navigation -->
+                <button id="navStudents" class="nav-item admin-faculty">
+                    <i class="fa-solid fa-user-graduate"></i> <span>Manage Students</span>
+                </button>
+                <button id="navEmployees" class="nav-item admin-only">
                     <i class="fa-solid fa-chalkboard-user"></i> <span>Manage Employees</span>
                 </button>
-                <button id="navAttendance" class="nav-item">
+                <button id="navAttendance" class="nav-item admin-faculty">
                     <i class="fa-solid fa-clipboard-check"></i> <span>Attendance</span>
                 </button>
-                <button id="navFees" class="nav-item">
+                <button id="navAssignments" class="nav-item">
+                    <i class="fa-solid fa-book-open"></i> <span>Courses</span>
+                </button>
+                <button id="navEnrollments" class="nav-item admin-faculty">
+                    <i class="fa-solid fa-user-plus"></i> <span>Enrollments</span>
+                </button>
+                <button id="navFees" class="nav-item admin-only">
                     <i class="fa-solid fa-receipt"></i> <span>Manage Fees</span>
                 </button>
-                <button id="navAssignments" class="nav-item">
-                    <i class="fa-solid fa-book-open"></i> <span>Assignments</span>
-                </button>
                 <button id="navReports" class="nav-item">
-                    <i class="fa-solid fa-chart-line"></i> <span>Progress Reports</span>
-                </button>
-                <button id="navMore" class="nav-item">
-                    <i class="fa-solid fa-border-all"></i> <span>More</span>
+                    <i class="fa-solid fa-chart-line"></i> <span>Reports</span>
                 </button>
             </nav>
 
@@ -535,14 +545,137 @@
 
                 <!-- PROFILE VIEW -->
                 <div id="viewProfile" class="content-view" style="display: none;">
-                    <div class="form-container">
-                        <h3>Your Profile</h3>
-                        <div class="profile-info">
-                            <p><strong>Name:</strong> <span id="profileName"></span></p>
-                            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-                            <p><strong>Username:</strong> <span id="profileUsername"></span></p>
-                            <p><strong>Role:</strong> <span id="profileRole"></span></p>
+                    <div class="dashboard-grid" style="grid-template-columns: 1fr 2fr;">
+                        <!-- Profile Card -->
+                        <div class="section-card">
+                            <div style="text-align: center; padding: 2rem 1rem;">
+                                <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User&background=random&size=120" 
+                                    alt="Profile" style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 1rem;">
+                                <h3 id="profileName" style="margin-bottom: 0.5rem;"></h3>
+                                <span id="profileRoleBadge" class="badge badge-primary" style="font-size: 0.9rem;"></span>
+                            </div>
+                            <div style="border-top: 1px solid var(--border-color); padding: 1.5rem;">
+                                <p style="margin-bottom: 1rem;"><i class="fa-solid fa-envelope" style="width: 20px; color: var(--text-secondary);"></i> <span id="profileEmail"></span></p>
+                                <p style="margin-bottom: 1rem;"><i class="fa-solid fa-user" style="width: 20px; color: var(--text-secondary);"></i> @<span id="profileUsername"></span></p>
+                                <p><i class="fa-solid fa-calendar" style="width: 20px; color: var(--text-secondary);"></i> Member since Jan 2024</p>
+                            </div>
                         </div>
+                        <!-- Profile Details / Edit -->
+                        <div class="section-card">
+                            <div class="card-header">
+                                <h3>Profile Settings</h3>
+                            </div>
+                            <form id="profileEditForm" style="max-width: 500px;">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="editProfileName" name="full_name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" id="editProfileEmail" disabled style="background: var(--bg-color);">
+                                </div>
+                                <button type="submit" class="submit-btn" style="width: auto;">Update Profile</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MY COURSES VIEW (For Students) -->
+                <div id="viewMyCourses" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>My Enrolled Courses</h3>
+                    </div>
+                    <div id="myCoursesGrid" class="stats-row" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                        <!-- Course cards will be loaded here -->
+                    </div>
+                    <div id="myCoursesLoading" class="loading" style="display: none;">Loading your courses...</div>
+                    <div id="myCoursesEmpty" class="no-data" style="display: none;">
+                        <i class="fa-solid fa-book-open fa-3x" style="margin-bottom: 1rem; color: var(--text-muted);"></i>
+                        <p>You are not enrolled in any courses yet.</p>
+                    </div>
+                </div>
+
+                <!-- MY ATTENDANCE VIEW (For Students) -->
+                <div id="viewMyAttendance" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>My Attendance Record</h3>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <select id="myAttendanceMonth" class="small-select" style="padding: 8px 16px;">
+                                <option value="">This Month</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
+                        <div class="stat-card">
+                            <div class="stat-header"><span>Present Days</span></div>
+                            <div class="stat-value text-success" id="myPresentDays">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span>Absent Days</span></div>
+                            <div class="stat-value text-danger" id="myAbsentDays">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span>Attendance %</span></div>
+                            <div class="stat-value" id="myAttendancePercent">0%</div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Status</th><th>Remarks</th></tr>
+                            </thead>
+                            <tbody id="myAttendanceTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ENROLLMENT MANAGEMENT VIEW -->
+                <div id="viewEnrollments" class="content-view" style="display: none;">
+                    <div class="section-header">
+                        <h3>Course Enrollments</h3>
+                        <button id="addEnrollmentBtn" class="submit-btn" style="width: auto;">Enroll Student</button>
+                    </div>
+                    
+                    <!-- Enrollment Form -->
+                    <div id="addEnrollmentForm" class="form-container" style="display: none; margin-bottom: 1.5rem;">
+                        <h4>Enroll Student in Course</h4>
+                        <form id="enrollmentForm">
+                            <div class="form-group">
+                                <label>Select Student *</label>
+                                <select id="enrollStudentSelect" name="student_id" required>
+                                    <option value="">-- Select Student --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Course *</label>
+                                <select id="enrollCourseSelect" name="course_id" required>
+                                    <option value="">-- Select Course --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="submit-btn">Enroll</button>
+                                <button type="button" id="cancelEnrollmentBtn" class="submit-btn cancel-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Enrolled On</th>
+                                        <th>Grade</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="enrollmentsTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="enrollmentsLoading" class="loading" style="display: none;">Loading enrollments...</div>
+                        <div id="enrollmentsNoData" class="no-data" style="display: none;">No enrollments found.</div>
                     </div>
                 </div>
 
