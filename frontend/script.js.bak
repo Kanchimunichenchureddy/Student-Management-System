@@ -205,11 +205,11 @@ function escapeHtml(text) {
 
 function hideAllViews() {
     // Hide all content views
-    const allViews = [viewHome, viewStudents, viewEmployees, viewAttendance, viewCourses, 
-                      viewProfile, viewFees, viewReports, viewSettings, viewHelp, 
-                      viewComingSoon, viewEnrollments, viewMyCourses, viewMyAttendance];
+    const allViews = [viewHome, viewStudents, viewEmployees, viewAttendance, viewCourses,
+        viewProfile, viewFees, viewReports, viewSettings, viewHelp,
+        viewComingSoon, viewEnrollments, viewMyCourses, viewMyAttendance];
     allViews.forEach(v => { if (v) v.style.display = 'none'; });
-    
+
     // Reset active nav state
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
 }
@@ -217,28 +217,28 @@ function hideAllViews() {
 function setupRoleBasedUI() {
     const user = JSON.parse(localStorage.getItem('user') || 'null');
     if (!user) return;
-    
+
     const role = user.role;
     const isStudent = role === 'student';
     const isAdmin = role === 'admin';
     const isFaculty = role === 'faculty';
     const isAdminOrFaculty = isAdmin || isFaculty;
-    
+
     // Student-only navigation
     document.querySelectorAll('.student-only').forEach(el => {
         el.style.display = isStudent ? 'flex' : 'none';
     });
-    
+
     // Admin-only navigation
     document.querySelectorAll('.admin-only').forEach(el => {
         el.style.display = isAdmin ? 'flex' : 'none';
     });
-    
+
     // Admin/Faculty navigation
     document.querySelectorAll('.admin-faculty').forEach(el => {
         el.style.display = isAdminOrFaculty ? 'flex' : 'none';
     });
-    
+
     // Hide ADD buttons for students
     if (isStudent) {
         if (addStudentModalBtn) addStudentModalBtn.style.display = 'none';
@@ -251,7 +251,7 @@ function setupRoleBasedUI() {
         if (quickAddStudent) quickAddStudent.style.display = 'flex';
         if (addEmployeeModalBtn) addEmployeeModalBtn.style.display = 'inline-block';
     }
-    
+
     // Update dashboard greeting based on role
     const roleGreeting = {
         'admin': 'Administrator',
@@ -373,7 +373,7 @@ function showDashboard() {
 
     // Setup role-based navigation
     setupRoleBasedUI();
-    
+
     // Load Dashboard Data
     loadDashboardStats();
     renderCalendar();
@@ -385,11 +385,11 @@ function showDashboard() {
 function loadProfileData() {
     const user = JSON.parse(localStorage.getItem('user') || 'null');
     if (!user) return;
-    
+
     // Profile card
     const profileAvatar = document.getElementById('profileAvatar');
     const profileRoleBadge = document.getElementById('profileRoleBadge');
-    
+
     if (profileName) profileName.textContent = user.full_name;
     if (profileEmail) profileEmail.textContent = user.email;
     if (profileUsername) profileUsername.textContent = user.username;
@@ -398,7 +398,7 @@ function loadProfileData() {
         profileRoleBadge.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
         profileRoleBadge.className = `badge ${user.role === 'admin' ? 'badge-primary' : user.role === 'faculty' ? 'badge-secondary' : 'badge-success'}`;
     }
-    
+
     // Edit form
     const editProfileName = document.getElementById('editProfileName');
     const editProfileEmail = document.getElementById('editProfileEmail');
@@ -606,10 +606,10 @@ function displayStudents(students) {
     studentsTableBody.innerHTML = '';
     const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-    students.forEach(student => {
+    students.forEach((student, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${student.id}</td>
+            <td>${index + 1}</td>
             <td>${escapeHtml(student.full_name)}</td>
             <td>${escapeHtml(student.roll_number)}</td>
             <td>${escapeHtml(student.email)}</td>
@@ -697,10 +697,10 @@ function displayCourses(courses) {
     coursesTableBody.innerHTML = '';
     const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-    courses.forEach(course => {
+    courses.forEach((course, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${course.id}</td>
+            <td>${index + 1}</td>
             <td>${escapeHtml(course.course_code)}</td>
             <td>${escapeHtml(course.course_name)}</td>
             <td>${course.credits}</td>
@@ -794,10 +794,10 @@ function displayEmployees(users) {
     employeesTableBody.innerHTML = '';
     const currentUser = JSON.parse(localStorage.getItem('user'));
 
-    users.forEach(user => {
+    users.forEach((user, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${user.id}</td>
+            <td>${index + 1}</td>
             <td>${escapeHtml(user.full_name)}</td>
             <td>${escapeHtml(user.username)}</td>
             <td>${escapeHtml(user.email)}</td>
@@ -952,17 +952,17 @@ async function loadEnrollments() {
     const enrollmentsLoading = document.getElementById('enrollmentsLoading');
     const enrollmentsNoData = document.getElementById('enrollmentsNoData');
     const enrollmentsTableBody = document.getElementById('enrollmentsTableBody');
-    
+
     if (!enrollmentsTableBody) return;
-    
+
     enrollmentsLoading.style.display = 'block';
     enrollmentsNoData.style.display = 'none';
     enrollmentsTableBody.innerHTML = '';
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/enrollments`, { headers: getAuthHeaders() });
         const enrollments = await response.json();
-        
+
         if (response.ok) {
             if (enrollments.length === 0) {
                 enrollmentsNoData.style.display = 'block';
@@ -981,7 +981,7 @@ async function loadEnrollments() {
 function displayEnrollments(enrollments) {
     const enrollmentsTableBody = document.getElementById('enrollmentsTableBody');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
-    
+
     enrollmentsTableBody.innerHTML = '';
     enrollments.forEach(enrollment => {
         const row = document.createElement('tr');
@@ -995,7 +995,7 @@ function displayEnrollments(enrollments) {
                 </span>
             </td>
             <td>
-                ${user && user.role === 'admin' ? 
+                ${user && user.role === 'admin' ?
                 `<button class="action-btn delete-btn" onclick="deleteEnrollment(${enrollment.id})">
                     <i class="fa-solid fa-trash"></i>
                 </button>` : ''}
@@ -1012,7 +1012,7 @@ async function loadEnrollmentSelects() {
             fetch(`${API_BASE_URL}/students`, { headers: getAuthHeaders() }),
             fetch(`${API_BASE_URL}/courses`, { headers: getAuthHeaders() })
         ]);
-        
+
         if (studentsRes.ok) {
             const students = await studentsRes.json();
             const studentSelect = document.getElementById('enrollStudentSelect');
@@ -1023,7 +1023,7 @@ async function loadEnrollmentSelects() {
                 });
             }
         }
-        
+
         if (coursesRes.ok) {
             const courses = await coursesRes.json();
             const courseSelect = document.getElementById('enrollCourseSelect');
@@ -1046,7 +1046,7 @@ async function createEnrollment(studentId, courseId) {
             headers: getAuthHeaders(),
             body: JSON.stringify({ student_id: parseInt(studentId), course_id: parseInt(courseId) })
         });
-        
+
         if (response.ok) {
             showMessage('Student enrolled successfully!', 'success');
             document.getElementById('addEnrollmentForm').style.display = 'none';
@@ -1086,19 +1086,19 @@ async function loadMyCourses() {
     const myCoursesGrid = document.getElementById('myCoursesGrid');
     const myCoursesLoading = document.getElementById('myCoursesLoading');
     const myCoursesEmpty = document.getElementById('myCoursesEmpty');
-    
+
     if (!myCoursesGrid) return;
-    
+
     myCoursesLoading.style.display = 'block';
     myCoursesEmpty.style.display = 'none';
     myCoursesGrid.innerHTML = '';
-    
+
     // For students, we need to get enrollments and then show courses
     // For now, show all courses (in a real app, filter by student's enrollments)
     try {
         const response = await fetch(`${API_BASE_URL}/courses`, { headers: getAuthHeaders() });
         const courses = await response.json();
-        
+
         if (response.ok) {
             if (courses.length === 0) {
                 myCoursesEmpty.style.display = 'block';
@@ -1136,16 +1136,16 @@ async function loadMyAttendance() {
     const myPresentDays = document.getElementById('myPresentDays');
     const myAbsentDays = document.getElementById('myAbsentDays');
     const myAttendancePercent = document.getElementById('myAttendancePercent');
-    
+
     if (!myAttendanceTableBody) return;
-    
+
     myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
-    
+
     try {
         // Get current user's attendance (mock: showing all attendance for now)
         const response = await fetch(`${API_BASE_URL}/attendance`, { headers: getAuthHeaders() });
         const records = await response.json();
-        
+
         if (response.ok) {
             // Calculate stats
             let present = 0, absent = 0;
@@ -1153,17 +1153,17 @@ async function loadMyAttendance() {
                 if (r.status === 'Present') present++;
                 else if (r.status === 'Absent') absent++;
             });
-            
+
             const total = present + absent;
             const percent = total > 0 ? Math.round((present / total) * 100) : 0;
-            
+
             if (myPresentDays) myPresentDays.textContent = present;
             if (myAbsentDays) myAbsentDays.textContent = absent;
             if (myAttendancePercent) {
                 myAttendancePercent.textContent = `${percent}%`;
                 myAttendancePercent.className = `stat-value ${percent >= 75 ? 'text-success' : percent >= 50 ? '' : 'text-danger'}`;
             }
-            
+
             // Display records
             myAttendanceTableBody.innerHTML = '';
             if (records.length === 0) {
@@ -1376,18 +1376,18 @@ const profileEditForm = document.getElementById('profileEditForm');
 if (profileEditForm) profileEditForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fullName = document.getElementById('editProfileName').value;
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/auth/me?full_name=${encodeURIComponent(fullName)}`, {
             method: 'PUT',
             headers: getAuthHeaders()
         });
-        
+
         if (response.ok) {
             const updatedUser = await response.json();
             saveUser(updatedUser);
             showMessage('Profile updated successfully!', 'success');
-            
+
             // Update UI
             userNameDisplay.textContent = updatedUser.full_name;
             headerProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(updatedUser.full_name)}&background=random`;
@@ -1402,7 +1402,7 @@ if (profileEditForm) profileEditForm.addEventListener('submit', async (e) => {
 });
 
 // Init
-document.addEventListener('DOMContentLoaded', () => { 
+document.addEventListener('DOMContentLoaded', () => {
     if (isLoggedIn()) showDashboard();
     else showLogin();
 });

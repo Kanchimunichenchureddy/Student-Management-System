@@ -9,7 +9,8 @@ export default defineConfig({
             '/courses': 'http://127.0.0.1:8005',
             '/attendance': 'http://127.0.0.1:8005',
             '/dashboard': 'http://127.0.0.1:8005',
-            '/users': 'http://127.0.0.1:8005'
+            '/users': 'http://127.0.0.1:8005',
+            '/enrollments': 'http://127.0.0.1:8005'
         }
     }
 });
