@@ -114,8 +114,15 @@ export async function loadMyAttendance() {
     myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
 
     try {
-        // Get current user's attendance (mock: showing all attendance for now)
-        const response = await fetch(`${API_BASE_URL}/attendance`, { headers: getAuthHeaders() });
+        // Get current user from localStorage
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user || !user.id) {
+            myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Please log in to view attendance</td></tr>';
+            return;
+        }
+
+        // Get current student's attendance only
+        const response = await fetch(`${API_BASE_URL}/attendance?student_id=${user.id}`, { headers: getAuthHeaders() });
         const records = await response.json();
 
         if (response.ok) {

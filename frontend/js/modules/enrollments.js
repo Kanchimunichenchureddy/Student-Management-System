@@ -151,27 +151,37 @@ export async function loadMyCourses() {
     myCoursesGrid.innerHTML = '';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/courses`, { headers: getAuthHeaders() });
-        const courses = await response.json();
+        // Get current user from localStorage
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user || !user.id) {
+            myCoursesLoading.style.display = 'none';
+            myCoursesEmpty.style.display = 'block';
+            myCoursesEmpty.textContent = 'Please log in to view your courses';
+            return;
+        }
+
+        // Fetch only courses the student is enrolled in
+        const response = await fetch(`${API_BASE_URL}/enrollments/student/${user.id}/courses`, { headers: getAuthHeaders() });
+        const enrollments = await response.json();
 
         if (response.ok) {
-            if (courses.length === 0) {
+            if (enrollments.length === 0) {
                 myCoursesEmpty.style.display = 'block';
             } else {
-                courses.forEach(course => {
+                enrollments.forEach(enrollment => {
                     const card = document.createElement('div');
                     card.className = 'stat-card';
                     card.style.cursor = 'pointer';
                     card.innerHTML = `
                         <div class="stat-header">
-                            <span>${escapeHtml(course.course_code)}</span>
-                            <span class="badge badge-secondary">${course.credits} Credits</span>
+                            <span>${escapeHtml(enrollment.course_name || 'Unknown Course')}</span>
+                            <span class="badge ${enrollment.grade ? 'badge-success' : 'badge-secondary'}">
+                                ${enrollment.grade || 'Not Graded'}
+                            </span>
                         </div>
-                        <h4 style="margin: 0.5rem 0; font-size: 1.1rem;">${escapeHtml(course.course_name)}</h4>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
-                            ${escapeHtml(course.department)}
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;">
+                            Enrolled: ${new Date(enrollment.enrolled_at).toLocaleDateString()}
                         </p>
-                        ${course.description ? `<p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">${escapeHtml(course.description.substring(0, 100))}...</p>` : ''}
                     `;
                     myCoursesGrid.appendChild(card);
                 });
