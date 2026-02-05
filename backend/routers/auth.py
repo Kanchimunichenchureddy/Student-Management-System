@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from jose import JWTError
 from typing import List, Optional
 
-from models import User, get_db
+from models import User, Student, get_db
 from schemas import (
     UserCreate, UserLogin, UserResponse, TokenResponse, 
     RefreshTokenRequest, PasswordResetRequest, PasswordResetConfirm
@@ -55,6 +55,34 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
+        # If the new user is a student, try to link to an existing Student
+        # profile by email; otherwise create a minimal Student profile so
+        # the student can immediately see attendance and related data.
+        try:
+            if db_user.role == "student":
+                existing_student = db.query(Student).filter(Student.email == db_user.email.lower()).first()
+                if existing_student:
+                    # Link existing profile
+                    existing_student.user_id = db_user.id
+                    db.add(existing_student)
+                    db.commit()
+                else:
+                    # Create a minimal student profile with placeholders
+                    placeholder_roll = f"AUTO{db_user.id}"
+                    minimal_student = Student(
+                        user_id=db_user.id,
+                        full_name=db_user.full_name,
+                        roll_number=placeholder_roll,
+                        email=db_user.email.lower(),
+                        phone_number="0000000000",
+                        department="Not Specified",
+                        year_of_study="Not Specified"
+                    )
+                    db.add(minimal_student)
+                    db.commit()
+        except IntegrityError:
+            db.rollback()
+            logger.exception("Failed to create/link student profile for new user")
         
         # Generate tokens
         access_token = create_access_token(data={"sub": str(db_user.id), "role": db_user.role})

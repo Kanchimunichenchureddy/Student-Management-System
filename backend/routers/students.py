@@ -80,6 +80,7 @@ async def create_student(
         
         # Create new student
         db_student = Student(
+            user_id=student.user_id,  # Link to user account if provided
             full_name=student.full_name,
             roll_number=student.roll_number.upper(),
             email=student.email.lower(),

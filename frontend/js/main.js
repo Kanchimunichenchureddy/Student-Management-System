@@ -27,6 +27,7 @@ window.deleteUser = EmployeeModule.deleteUser;
 window.deleteEnrollment = EnrollmentModule.deleteEnrollment;
 window.markStudent = AttendanceModule.markStudent;
 window.loadAttendance = AttendanceModule.loadAttendance; // For the 'Load' button
+window.loadMyAttendance = AttendanceModule.loadMyAttendance; // For student attendance view
 
 
 // DOM Elements - Auth & Containers

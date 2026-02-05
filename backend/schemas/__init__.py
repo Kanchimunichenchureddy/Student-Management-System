@@ -91,6 +91,7 @@ class StudentCreate(BaseModel):
     phone_number: str
     department: str
     year_of_study: str
+    user_id: Optional[int] = None  # Link to user account if available
 
     @field_validator('full_name')
     @classmethod
@@ -135,6 +136,7 @@ class StudentCreate(BaseModel):
 
 class StudentResponse(BaseModel):
     id: int
+    user_id: Optional[int] = None
     full_name: str
     roll_number: str
     email: str

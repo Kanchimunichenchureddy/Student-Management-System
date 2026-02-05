@@ -12,7 +12,7 @@ const chartContainer = document.querySelector('.section-card:nth-child(3) div');
 
 export async function loadDashboardStats() {
     try {
-        const response = await fetch(`${API_BASE_URL}/dashboard/stats`, {
+        const response = await fetch(`${API_BASE_URL}/dashboard/stats`, { 
             headers: getAuthHeaders()
         });
 
@@ -35,7 +35,7 @@ export async function loadDashboardStats() {
 
 let attendanceChart = null;
 
-function renderAttendanceChart(present, total) {
+function renderAttendanceChart(present, total) { 
     if (!chartContainer) return;
 
     // Clear placeholder text

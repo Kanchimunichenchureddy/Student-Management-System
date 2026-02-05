@@ -5,6 +5,7 @@ A REST API for managing student details with authentication.
 """
 
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -37,13 +38,30 @@ logger = logging.getLogger(__name__)
 # Rate limiter setup
 limiter = Limiter(key_func=get_remote_address)
 
+
+# Lifespan event handler
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle startup and shutdown events"""
+    # Startup
+    logger.info("Creating database tables...")
+    create_tables()
+    logger.info("Database tables created successfully")
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down...")
+
+
 # Create FastAPI app
 app = FastAPI(
     title="Student Management System",
     description="A REST API for managing student details with authentication",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # Add rate limiter to app state
@@ -74,24 +92,12 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# ============== Include Routers ==============
-
 app.include_router(auth_router)
 app.include_router(students_router)
 app.include_router(courses_router)
 app.include_router(attendance_router)
 app.include_router(admin_router)
 app.include_router(enrollments_router)
-
-
-# ============== Startup Event ==============
-
-@app.on_event("startup")
-async def startup_event():
-    """Create database tables on startup"""
-    logger.info("Creating database tables...")
-    create_tables()
-    logger.info("Database tables created successfully")
 
 
 # ============== Main Entry Point ==============

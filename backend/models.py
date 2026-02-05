@@ -26,6 +26,7 @@ class Student(Base):
     __tablename__ = "students"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
     full_name = Column(String(100), nullable=False)
     roll_number = Column(String(20), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
@@ -35,14 +36,19 @@ class Student(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
+    # Relationship to User
+    user = relationship("User", backref=backref("student_profile", uselist=False))
+
     # Indexes for frequently queried columns
     __table_args__ = (
         Index('ix_students_department', 'department'),
+        Index('ix_students_user_id', 'user_id'),
     )
 
-    def to_dict(self):
+    def to_dict(self): 
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "full_name": self.full_name,
             "roll_number": self.roll_number,
             "email": self.email,

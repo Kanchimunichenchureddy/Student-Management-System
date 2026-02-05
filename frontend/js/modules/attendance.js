@@ -111,60 +111,100 @@ export async function markStudent(studentId, status) {
 export async function loadMyAttendance() {
     if (!myAttendanceTableBody) return;
 
-    myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+    myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Loading attendance...</td></tr>';
 
     try {
         // Get current user from localStorage
         const user = JSON.parse(localStorage.getItem('user') || 'null');
+        console.log('Current user:', user);
+        
         if (!user || !user.id) {
             myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Please log in to view attendance</td></tr>';
+            showMessage('Please log in first', 'error');
             return;
         }
 
-        // Get current student's attendance only
-        const response = await fetch(`${API_BASE_URL}/attendance?student_id=${user.id}`, { headers: getAuthHeaders() });
-        const records = await response.json();
+        // Get current student's attendance by user_id - backend will convert to student_id
+        console.log(`Fetching attendance for user_id: ${user.id}`);
+        const response = await fetch(`${API_BASE_URL}/attendance?user_id=${user.id}`, { 
+            headers: getAuthHeaders() 
+        });
 
-        if (response.ok) {
-            // Calculate stats
-            let present = 0, absent = 0;
-            records.forEach(r => {
-                if (r.status === 'Present') present++;
-                else if (r.status === 'Absent') absent++;
-            });
+        console.log('Response status:', response.status);
 
-            const total = present + absent;
-            const percent = total > 0 ? Math.round((present / total) * 100) : 0;
-
-            if (myPresentDays) myPresentDays.textContent = present;
-            if (myAbsentDays) myAbsentDays.textContent = absent;
-            if (myAttendancePercent) {
-                myAttendancePercent.textContent = `${percent}%`;
-                myAttendancePercent.className = `stat-value ${percent >= 75 ? 'text-success' : percent >= 50 ? '' : 'text-danger'}`;
-            }
-
-            // Display records
-            myAttendanceTableBody.innerHTML = '';
-            if (records.length === 0) {
-                myAttendanceTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No attendance records found</td></tr>';
-            } else {
-                records.slice(0, 30).forEach(record => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${new Date(record.date).toLocaleDateString()}</td>
-                        <td>
-                            <span class="badge ${record.status === 'Present' ? 'badge-success' : 'badge-danger'}">
-                                ${record.status}
-                            </span>
-                        </td>
-                        <td>${escapeHtml(record.remarks || '-')}</td>
-                    `;
-                    myAttendanceTableBody.appendChild(row);
-                });
-            }
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API Error:', errorData);
+            showMessage(`Error loading attendance: ${response.status}`, 'error');
+            myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Failed to load attendance records</td></tr>';
+            return;
         }
+
+        const records = await response.json();
+        console.log('Attendance records:', records);
+
+        // Calculate stats
+        let present = 0, absent = 0, late = 0, excused = 0;
+        records.forEach(r => {
+            if (r.status === 'Present') present++;
+            else if (r.status === 'Absent') absent++;
+            else if (r.status === 'Late') late++;
+            else if (r.status === 'Excused') excused++;
+        });
+
+        const total = present + absent + late + excused;
+        const percent = total > 0 ? Math.round((present / total) * 100) : 0;
+
+        // Update statistics
+        if (myPresentDays) myPresentDays.textContent = present;
+        if (myAbsentDays) myAbsentDays.textContent = absent;
+        if (myAttendancePercent) {
+            myAttendancePercent.textContent = `${percent}%`;
+            myAttendancePercent.className = `stat-value ${percent >= 75 ? 'text-success' : percent >= 50 ? '' : 'text-danger'}`;
+        }
+
+        console.log(`Stats - Present: ${present}, Absent: ${absent}, Percent: ${percent}%`);
+
+        // Display records
+        myAttendanceTableBody.innerHTML = '';
+        if (!records || records.length === 0) {
+            myAttendanceTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No attendance records found</td></tr>';
+        } else {
+            // Sort by date (newest first)
+            const sortedRecords = records.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedRecords.slice(0, 30).forEach(record => {
+                const row = document.createElement('tr');
+                const date = new Date(record.date);
+                const dateStr = date.toLocaleDateString('en-IN', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: '2-digit' 
+                });
+                
+                const statusClass = record.status === 'Present' ? 'badge-success' : 
+                                   record.status === 'Absent' ? 'badge-danger' :
+                                   record.status === 'Late' ? 'badge-warning' : 'badge-info';
+                
+                row.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>
+                        <span class="badge ${statusClass}">
+                            ${record.status}
+                        </span>
+                    </td>
+                    <td>${escapeHtml(record.remarks || '-')}</td>
+                `;
+                myAttendanceTableBody.appendChild(row);
+            });
+            
+            console.log(`Displayed ${Math.min(sortedRecords.length, 30)} attendance records`);
+        }
+        
     } catch (error) {
         console.error('Error loading attendance:', error);
-        myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Failed to load attendance</td></tr>';
+        console.error('Error details:', error.message, error.stack);
+        myAttendanceTableBody.innerHTML = '<tr><td colspan="3">Failed to load attendance. Please try again.</td></tr>';
+        showMessage('Failed to load attendance records', 'error');
     }
 }

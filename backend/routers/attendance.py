@@ -73,11 +73,48 @@ async def mark_attendance(
 async def get_attendance(
     date: Optional[str] = None,
     student_id: Optional[int] = None,
+    user_id: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get attendance records, optionally filtered by date (YYYY-MM-DD) or student_id"""
+    """Get attendance records, optionally filtered by date (YYYY-MM-DD), student_id, or user_id
+    
+    If user_id is provided, it will be converted to student_id automatically.
+    Students can only view their own attendance.
+    """
     query = db.query(Attendance)
+    
+    # Handle user_id -> student_id conversion
+    if user_id:
+        student = db.query(Student).filter(Student.user_id == user_id).first()
+        if not student:
+            # Return empty list instead of error - student may not have a profile yet
+            return []
+        student_id = student.id
+    
+    # Students can only view their own attendance
+    if current_user.role == "student":
+        # Get this student's student_id. If the user was recreated and the
+        # Student.profile isn't linked by user_id, try to find by email and
+        # link the records so the student can see their attendance.
+        student = db.query(Student).filter(Student.user_id == current_user.id).first()
+        if not student:
+            # Try to find a student profile by email and link it
+            student = db.query(Student).filter(Student.email == current_user.email.lower()).first()
+            if student:
+                try:
+                    student.user_id = current_user.id
+                    db.add(student)
+                    db.commit()
+                    db.refresh(student)
+                except Exception:
+                    db.rollback()
+            else:
+                return []
+        student_id = student.id
+    
+    if student_id:
+        query = query.filter(Attendance.student_id == student_id)
     
     if date:
         try:
@@ -85,9 +122,6 @@ async def get_attendance(
             query = query.filter(func.date(Attendance.date) == query_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
-            
-    if student_id:
-        query = query.filter(Attendance.student_id == student_id)
         
     records = query.all()
     
